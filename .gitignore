@@ -1,6 +1,10 @@
 ### Cursor ###
 .cursor/
 
+### Spring Boot 민감 정보 ###
+**/application-local.properties
+**/application-prod.properties
+
 ### Gradle ###
 .gradle/
 build/
