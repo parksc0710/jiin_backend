@@ -1,3 +1,6 @@
+### Cursor ###
+.cursor/
+
 ### Gradle ###
 .gradle/
 build/
