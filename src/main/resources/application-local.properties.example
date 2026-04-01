@@ -3,10 +3,11 @@
 # 이 파일을 복사해 application-local.properties 로 이름을 바꾸고 값을 채워넣으세요
 # ------------------------------------------------
 
-# 데이터베이스
-# spring.datasource.url=jdbc:mysql://localhost:3306/jiin_db
-# spring.datasource.username=root
-# spring.datasource.password=
+# 데이터베이스 (MSSQL)
+spring.datasource.url=jdbc:sqlserver://호스트:1433;encrypt=false;trustServerCertificate=true
+spring.datasource.username=계정명
+spring.datasource.password=비밀번호
+spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
 
 # JWT 시크릿 키
 # jwt.secret=
