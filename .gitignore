@@ -5,6 +5,9 @@
 **/application-local.properties
 **/application-prod.properties
 
+### DB 스키마 ###
+**/db/
+
 ### Gradle ###
 .gradle/
 build/
