@@ -1,6 +1,7 @@
 package com.jiin.backend.oauth2;
 
 import com.jiin.backend.jwt.JwtProvider;
+import com.jiin.backend.mapper.RegisterTokenMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +31,8 @@ class OAuth2SuccessHandlerTest {
     @Mock
     private JwtProvider jwtProvider;
     @Mock
+    private RegisterTokenMapper registerTokenMapper;
+    @Mock
     private HttpServletRequest request;
     @Mock
     private HttpServletResponse response;
@@ -40,7 +43,7 @@ class OAuth2SuccessHandlerTest {
 
     @BeforeEach
     void setUp() {
-        handler = new OAuth2SuccessHandler(jwtProvider);
+        handler = new OAuth2SuccessHandler(jwtProvider, registerTokenMapper);
         ReflectionTestUtils.setField(handler, "redirectUri", "http://localhost:8088");
         ReflectionTestUtils.setField(handler, "cookieName", "access_token");
         ReflectionTestUtils.setField(handler, "cookieSecure", false);
