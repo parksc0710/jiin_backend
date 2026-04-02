@@ -25,7 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private static final int REGISTER_TOKEN_EXPIRY_MINUTES = 10;
+    private static final int REGISTER_TOKEN_EXPIRY_MINUTES = 3;
 
     private final JwtProvider jwtProvider;
     private final RegisterTokenMapper registerTokenMapper;
