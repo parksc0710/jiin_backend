@@ -22,9 +22,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserMapper userMapper;
 
+    // 테스트에서 super.loadUser() 호출을 spy로 대체할 수 있도록 protected로 분리
+    protected OAuth2User fetchOAuth2User(OAuth2UserRequest userRequest) {
+        return super.loadUser(userRequest);
+    }
+
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        OAuth2User oAuth2User = super.loadUser(userRequest);
+        OAuth2User oAuth2User = fetchOAuth2User(userRequest);
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuthUserInfo userInfo = extractUserInfo(registrationId, oAuth2User.getAttributes());
@@ -58,12 +63,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return switch (registrationId.toLowerCase()) {
             case "kakao" -> parseKakao(attributes);
             case "naver" -> parseNaver(attributes);
-            default -> throw new OAuth2AuthenticationException("지원하지 않는 소셜 로그인: " + registrationId);
+            default -> throw new OAuth2AuthenticationException(
+                    new org.springframework.security.oauth2.core.OAuth2Error(
+                            "unsupported_provider",
+                            "지원하지 않는 소셜 로그인: " + registrationId,
+                            null));
         };
     }
 
     @SuppressWarnings("unchecked")
-    private OAuthUserInfo parseKakao(Map<String, Object> attributes) {
+    OAuthUserInfo parseKakao(Map<String, Object> attributes) {
         String providerId = String.valueOf(attributes.get("id"));
 
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.getOrDefault("kakao_account", Map.of());
@@ -77,7 +86,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     @SuppressWarnings("unchecked")
-    private OAuthUserInfo parseNaver(Map<String, Object> attributes) {
+    OAuthUserInfo parseNaver(Map<String, Object> attributes) {
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
 
         String providerId = (String) response.get("id");
