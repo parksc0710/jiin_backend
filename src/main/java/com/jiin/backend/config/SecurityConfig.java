@@ -45,6 +45,8 @@ public class SecurityConfig {
                     "/api/oauth2/**",
                     "/api/login/**",
                     "/api/auth/logout",
+                    "/api/auth/register",
+                    "/api/users/check-nickname",
                     "/api/health",
                     "/swagger-ui/**",
                     "/swagger-ui.html",

@@ -24,6 +24,24 @@
         { CALL up_user_find_by_id(#{userId}) }
     </select>
 
+    <update id="insertUser" statementType="CALLABLE">
+        { CALL up_user_insert(
+            #{provider},
+            #{providerId},
+            #{providerEmail},
+            #{nickname},
+            #{profileImage}
+        )}
+    </update>
+
+    <select id="countByNickname" statementType="CALLABLE" resultType="int">
+        { CALL up_user_exists_by_nickname(#{nickname}) }
+    </select>
+
+    <update id="updateNickname" statementType="CALLABLE">
+        { CALL up_user_update_nickname(#{userId}, #{nickname}) }
+    </update>
+
     <!-- 최초 가입이면 INSERT, 이미 있으면 닉네임·이메일·프로필 이미지·updated_at 갱신 -->
     <update id="upsertUser" statementType="CALLABLE">
         { CALL up_user_upsert(

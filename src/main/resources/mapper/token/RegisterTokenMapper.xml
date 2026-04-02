@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jiin.backend.mapper.RegisterTokenMapper">
+
+    <resultMap id="RegisterTokenResultMap" type="com.jiin.backend.domain.RegisterToken">
+        <result property="provider"     column="provider"/>
+        <result property="providerId"   column="provider_id"/>
+        <result property="email"        column="email"/>
+        <result property="profileImage" column="profile_image"/>
+    </resultMap>
+
+    <update id="insertToken" statementType="CALLABLE">
+        { CALL up_temp_token_insert(
+            #{token},
+            #{provider},
+            #{providerId},
+            #{email},
+            #{profileImage},
+            #{expiresAt}
+        )}
+    </update>
+
+    <select id="consumeToken" statementType="CALLABLE" resultMap="RegisterTokenResultMap">
+        { CALL up_temp_token_consume(#{token}) }
+    </select>
+
+</mapper>

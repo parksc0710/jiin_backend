@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,28 +35,31 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuthUserInfo userInfo = extractUserInfo(registrationId, oAuth2User.getAttributes());
 
-        // DB에 사용자 저장 또는 갱신
-        User user = User.builder()
-                .provider(userInfo.provider())
-                .providerId(userInfo.providerId())
-                .providerEmail(userInfo.email())
-                .nickname(userInfo.nickname())
-                .profileImage(userInfo.profileImage())
-                .build();
-        userMapper.upsertUser(user);
+        // 기존 유저 여부 조회 (upsert 없이 조회만)
+        User existingUser = userMapper.findByProviderAndProviderId(userInfo.provider(), userInfo.providerId());
 
-        // 이후 SuccessHandler에서 userId를 꺼낼 수 있도록 DB 조회
-        User savedUser = userMapper.findByProviderAndProviderId(userInfo.provider(), userInfo.providerId());
+        Map<String, Object> attributes = new HashMap<>();
 
-        Map<String, Object> attributes = Map.of(
-                "userId",   savedUser.getUserId(),
-                "provider", savedUser.getProvider()
-        );
+        if (existingUser != null) {
+            // 기존 유저: userId, provider 전달
+            attributes.put("isNewUser", false);
+            attributes.put("userId",    existingUser.getUserId());
+            attributes.put("provider",  existingUser.getProvider());
+            log.debug("기존 유저 로그인 - userId={}, provider={}", existingUser.getUserId(), userInfo.provider());
+        } else {
+            // 신규 유저: 소셜 정보만 전달 (DB 저장은 /register 에서 처리)
+            attributes.put("isNewUser",     true);
+            attributes.put("provider",      userInfo.provider());
+            attributes.put("providerId",    userInfo.providerId());
+            attributes.put("email",         userInfo.email());
+            attributes.put("profileImage",  userInfo.profileImage());
+            log.debug("신규 유저 감지 - provider={}, providerId={}", userInfo.provider(), userInfo.providerId());
+        }
 
         return new DefaultOAuth2User(
                 Set.of(new OAuth2UserAuthority(attributes)),
                 attributes,
-                "userId"
+                "provider"
         );
     }
 
@@ -78,9 +82,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.getOrDefault("kakao_account", Map.of());
         Map<String, Object> profile = (Map<String, Object>) kakaoAccount.getOrDefault("profile", Map.of());
 
-        String nickname = (String) profile.getOrDefault("nickname", "");
+        String nickname     = (String) profile.getOrDefault("nickname", "");
         String profileImage = (String) profile.getOrDefault("profile_image_url", null);
-        String email = (String) kakaoAccount.getOrDefault("email", null);
+        String email        = (String) kakaoAccount.getOrDefault("email", null);
 
         return new OAuthUserInfo("KAKAO", providerId, email, nickname, profileImage);
     }
@@ -89,10 +93,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     OAuthUserInfo parseNaver(Map<String, Object> attributes) {
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
 
-        String providerId = (String) response.get("id");
-        String nickname = (String) response.getOrDefault("name", "");
+        String providerId   = (String) response.get("id");
+        String nickname     = (String) response.getOrDefault("name", "");
         String profileImage = (String) response.getOrDefault("profile_image", null);
-        String email = (String) response.getOrDefault("email", null);
+        String email        = (String) response.getOrDefault("email", null);
 
         return new OAuthUserInfo("NAVER", providerId, email, nickname, profileImage);
     }
