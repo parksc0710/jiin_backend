@@ -10,5 +10,7 @@ public interface UserMapper {
     User findByProviderAndProviderId(@Param("provider") String provider,
                                     @Param("providerId") String providerId);
 
+    User findById(@Param("userId") Long userId);
+
     void upsertUser(User user);
 }

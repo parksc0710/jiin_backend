@@ -20,6 +20,10 @@
         { CALL up_user_find_by_provider(#{provider}, #{providerId}) }
     </select>
 
+    <select id="findById" statementType="CALLABLE" resultMap="UserResultMap">
+        { CALL up_user_find_by_id(#{userId}) }
+    </select>
+
     <!-- 최초 가입이면 INSERT, 이미 있으면 닉네임·이메일·프로필 이미지·updated_at 갱신 -->
     <update id="upsertUser" statementType="CALLABLE">
         { CALL up_user_upsert(

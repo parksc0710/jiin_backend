@@ -66,6 +66,12 @@ public class SecurityConfig {
                 .successHandler(oAuth2SuccessHandler)
             )
 
+            // 인증 실패 시 OAuth2 로그인 리다이렉트(302) 대신 401 반환
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) ->
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+            )
+
             // 로그아웃: access_token 쿠키를 만료시켜 삭제
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
