@@ -16,36 +16,19 @@
         <result property="updatedAt"     column="updated_at"/>
     </resultMap>
 
-    <select id="findByProviderAndProviderId" resultMap="UserResultMap">
-        SELECT user_id, provider, provider_id, provider_email,
-               nickname, profile_image, is_active, created_at, updated_at
-        FROM   users
-        WHERE  provider    = #{provider}
-          AND  provider_id = #{providerId}
+    <select id="findByProviderAndProviderId" statementType="CALLABLE" resultMap="UserResultMap">
+        { CALL up_user_find_by_provider(#{provider}, #{providerId}) }
     </select>
 
     <!-- 최초 가입이면 INSERT, 이미 있으면 닉네임·이메일·프로필 이미지·updated_at 갱신 -->
-    <insert id="upsertUser">
-        MERGE INTO users AS target
-        USING (
-            SELECT
-                #{provider}      AS provider,
-                #{providerId}    AS provider_id,
-                #{providerEmail} AS provider_email,
-                #{nickname}      AS nickname,
-                #{profileImage}  AS profile_image
-        ) AS src
-        ON  target.provider    = src.provider
-        AND target.provider_id = src.provider_id
-        WHEN MATCHED THEN
-            UPDATE SET
-                target.provider_email = src.provider_email,
-                target.nickname       = src.nickname,
-                target.profile_image  = src.profile_image,
-                target.updated_at     = GETDATE()
-        WHEN NOT MATCHED THEN
-            INSERT (provider, provider_id, provider_email, nickname, profile_image)
-            VALUES (src.provider, src.provider_id, src.provider_email, src.nickname, src.profile_image);
-    </insert>
+    <update id="upsertUser" statementType="CALLABLE">
+        { CALL up_user_upsert(
+            #{provider},
+            #{providerId},
+            #{providerEmail},
+            #{nickname},
+            #{profileImage}
+        )}
+    </update>
 
 </mapper>
